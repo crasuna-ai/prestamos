@@ -1,117 +1,116 @@
 package finalestructura;
 
-import javax.swing.*;
 import java.util.ArrayList;
+import javax.swing.*;
 
 public class ServicioPrestamoDiseno {
     public static ArrayList<EstudianteDiseno> vector_disenadores = new ArrayList<>();
     public static ArrayList<TabletaGrafica> vector_tableta = new ArrayList<>();
 
     public static void menu() {
-        String[] opciones = {
-            "Registrar préstamo de equipo",
-            "Modificar préstamo de equipo",
-            "Devolución de equipo",
-            "Buscar equipo",
-            "Volver al menú principal"
-        };
-        int opcion;
-        do {
-            opcion = JOptionPane.showOptionDialog(
-                null,
-                "Menú Diseño",
-                "Gestión Diseño",
-                JOptionPane.DEFAULT_OPTION,
-                JOptionPane.INFORMATION_MESSAGE,
-                null,
-                opciones,
-                opciones[0]
-            );
-            switch (opcion) {
-                case 0: registrarPrestamo(); break;
-                case 1: modificarPrestamo(); break;
-                case 2: devolucionEquipo(); break;
-                case 3: buscarEquipo(); break;
-                default: // salir
-            }
-        } while (opcion != 4 && opcion != JOptionPane.CLOSED_OPTION);
+        String[] opciones = {"Registrar préstamo", "Modificar préstamo", "Devolver equipo", "Buscar equipo", "Volver"};
+        int op = JOptionPane.showOptionDialog(null, "Menú Diseño", "Menú", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
+        switch(op) {
+            case 0: registrarPrestamo(); break;
+            case 1: modificarPrestamo(); break;
+            case 2: devolverPrestamo(); break;
+            case 3: buscarEquipo(); break;
+            default: break;
+        }
     }
 
     public static void registrarPrestamo() {
         String cedula = Utilidades.pedirCedulaObligatoria("Ingrese cédula:");
         if (Utilidades.buscarEstudianteDiseno(cedula) != null) {
-            JOptionPane.showMessageDialog(null, "Ya existe un préstamo registrado para esta cédula.");
+            JOptionPane.showMessageDialog(null, "Este estudiante ya tiene un préstamo registrado.");
             return;
         }
+        if (vector_tableta.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "No hay tabletas disponibles.");
+            return;
+        }
+
         String nombre = Utilidades.pedirNombreObligatorio("Ingrese nombre:");
-        String apellido = Utilidades.pedirCedulaOpcional("Ingrese apellido:");
-        String telefono = Utilidades.pedirTelefonoOpcional("Ingrese teléfono:");
-        String modalidad = JOptionPane.showInputDialog("Ingrese modalidad de estudio (virtual/presencial):");
-        int cantAsignaturas = Utilidades.pedirCantidadAsignaturasOpcional("Ingrese cantidad de asignaturas:");
+        String apellido = Utilidades.pedirNombreObligatorio("Ingrese apellido:");
+        String telefono = Utilidades.pedirTelefonoObligatorio("Ingrese teléfono:");
+        String modalidad = Utilidades.seleccionarModalidad();
+        int cantAsignaturas = Utilidades.pedirCantidadAsignaturasObligatorio("Ingrese cantidad de asignaturas:");
 
-        String serial = Utilidades.pedirSerialObligatorio("Ingrese serial de la tableta:");
-        if (Utilidades.buscarTableta(serial) != null) {
-            JOptionPane.showMessageDialog(null, "Ya existe un préstamo con ese serial.");
-            return;
-        }
-        String marca = Utilidades.pedirNombreOpcional("Ingrese marca de la tableta:");
-        float tamano = Utilidades.leerFloatOpcional("Ingrese tamaño en pulgadas:");
-        float precio = Utilidades.leerFloatOpcional("Ingrese precio:");
-        String almacenamiento = Utilidades.seleccionarAlmacenamiento();
-        float peso = Utilidades.leerFloatOpcional("Ingrese peso en kg:");
+        // Se asigna la primera tableta disponible
+        TabletaGrafica equipo = vector_tableta.remove(0);
 
-        TabletaGrafica tableta = new TabletaGrafica(serial, marca, tamano, precio, almacenamiento, peso);
-        vector_tableta.add(tableta);
-
-        int serialInt = serial.hashCode();
-        EstudianteDiseno estudiante = new EstudianteDiseno(cedula, nombre, apellido, telefono, modalidad, cantAsignaturas, serialInt);
+        EstudianteDiseno estudiante = new EstudianteDiseno(
+            cedula, nombre, apellido, telefono, modalidad, cantAsignaturas, equipo
+        );
         vector_disenadores.add(estudiante);
 
-        JOptionPane.showMessageDialog(null, "Préstamo registrado exitosamente.");
+        JOptionPane.showMessageDialog(null, "Préstamo registrado exitosamente.\nTableta asignada: " + equipo);
     }
 
     public static void modificarPrestamo() {
-        EstudianteDiseno est = Utilidades.buscarEstudianteDisenoPorMenu();
-        if (est == null) {
-            JOptionPane.showMessageDialog(null, "No existe registro para la búsqueda.");
+        EstudianteDiseno estudiante = Utilidades.buscarEstudianteDisenoPorMenu();
+        if (estudiante == null) {
+            JOptionPane.showMessageDialog(null, "No se encontró el estudiante.");
             return;
         }
-        est.setNombre(Utilidades.pedirNombreObligatorio("Nuevo nombre (" + est.getNombre() + "):"));
-        est.setApellido(Utilidades.pedirNombreOpcional("Nuevo apellido (" + est.getApellido() + "):"));
-        est.setTelefono(Utilidades.pedirTelefonoOpcional("Nuevo teléfono (" + est.getTelefono() + "):"));
-        est.setModalidad(JOptionPane.showInputDialog("Nueva modalidad (" + est.getModalidad() + "):"));
-        est.setCantAsignaturas(Utilidades.pedirCantidadAsignaturasOpcional("Nueva cantidad asignaturas (" + est.getCantAsignaturas() + "):"));
-
-        TabletaGrafica tableta = Utilidades.buscarTabletaPorSerialInt(est.getSerialEquipo());
-        if (tableta != null) {
-            tableta.setMarca(Utilidades.pedirNombreObligatorio("Nueva marca (" + tableta.getMarca() + "):"));
-            tableta.setTamano(Utilidades.leerFloatOpcional("Nuevo tamaño (" + tableta.getTamanio() + "):"));
-            tableta.setPrecio(Utilidades.leerFloatOpcional("Nuevo precio (" + tableta.getPrecio() + "):"));
-            tableta.setAlmacenamiento(Utilidades.seleccionarAlmacenamiento());
-            tableta.setPeso(Utilidades.leerFloatOpcional("Nuevo peso (" + tableta.getPeso() + "):"));
+        String[] opciones = {"Nombre", "Apellido", "Teléfono", "Modalidad", "Asignaturas", "Cancelar"};
+        int op = JOptionPane.showOptionDialog(null, "¿Qué desea modificar?", "Modificar", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
+        switch(op) {
+            case 0:
+                String nuevoNombre = Utilidades.pedirNombreObligatorio("Nuevo nombre:");
+                estudiante.setNombre(nuevoNombre);
+                break;
+            case 1:
+                String nuevoApellido = Utilidades.pedirNombreObligatorio("Nuevo apellido:");
+                estudiante.setApellido(nuevoApellido);
+                break;
+            case 2:
+                String nuevoTelefono = Utilidades.pedirTelefonoObligatorio("Nuevo teléfono:");
+                estudiante.setTelefono(nuevoTelefono);
+                break;
+            case 3:
+                String nuevaModalidad = Utilidades.seleccionarModalidad();
+                estudiante.setModalidad(nuevaModalidad);
+                break;
+            case 4:
+                int nuevasAsignaturas = Utilidades.pedirCantidadAsignaturasObligatorio("Cantidad de asignaturas:");
+                estudiante.setCantAsignaturas(nuevasAsignaturas);
+                break;
+            default: return;
         }
-        JOptionPane.showMessageDialog(null, "Registro modificado.");
+        JOptionPane.showMessageDialog(null, "Modificación exitosa.\n" + estudiante);
     }
 
-    public static void devolucionEquipo() {
-        EstudianteDiseno est = Utilidades.buscarEstudianteDisenoPorMenu();
-        if (est == null) {
-            JOptionPane.showMessageDialog(null, "No existe registro para la búsqueda.");
+    public static void devolverPrestamo() {
+        EstudianteDiseno estudiante = Utilidades.buscarEstudianteDisenoPorMenu();
+        if (estudiante == null) {
+            JOptionPane.showMessageDialog(null, "No se encontró el estudiante.");
             return;
         }
-        TabletaGrafica tableta = Utilidades.buscarTabletaPorSerialInt(est.getSerialEquipo());
-        vector_disenadores.remove(est);
-        if (tableta != null) vector_tableta.remove(tableta);
-        JOptionPane.showMessageDialog(null, "Registro eliminado exitosamente.");
+        // Se devuelve la tableta exacta que tenía asignada
+        vector_tableta.add(estudiante.getEquipoPrestado());
+        vector_disenadores.remove(estudiante);
+        JOptionPane.showMessageDialog(null, "Devolución exitosa. Tableta devuelta: " + estudiante.getEquipoPrestado());
     }
 
     public static void buscarEquipo() {
-        EstudianteDiseno est = Utilidades.buscarEstudianteDisenoPorMenu();
-        if (est != null) {
-            TabletaGrafica tableta = Utilidades.buscarTabletaPorSerialInt(est.getSerialEquipo());
-            JOptionPane.showMessageDialog(null, est.toString() + (tableta != null ? "\n" + tableta.toString() : ""));
+        EstudianteDiseno estudiante = Utilidades.buscarEstudianteDisenoPorMenu();
+        if (estudiante != null) {
+            JOptionPane.showMessageDialog(null, estudiante.toString());
         } else {
-            JOptionPane.showMessageDialog(null, "No existe registro para la búsqueda.");
+            JOptionPane.showMessageDialog(null, "Registro no encontrado.");
         }
+    }
+
+    // Para agregar nuevas tabletas al inventario (por ejemplo, desde un menú de administración)
+    public static void agregarTabletaAlInventario(TabletaGrafica nuevaTableta) {
+        for (TabletaGrafica t : vector_tableta) {
+            if (t.getSerial().equalsIgnoreCase(nuevaTableta.getSerial())) {
+                JOptionPane.showMessageDialog(null, "Ya existe una tableta con ese serial.");
+                return;
+            }
+        }
+        vector_tableta.add(nuevaTableta);
+        JOptionPane.showMessageDialog(null, "Tableta agregada al inventario: " + nuevaTableta);
     }
 }
