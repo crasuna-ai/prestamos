@@ -8,38 +8,16 @@ public class ServicioPrestamoIngenieria {
     public static ArrayList<ComputadorPortatil> vector_portatil = new ArrayList<>();
 
     public static void menu() {
-        String[] opciones = {
-            "Registrar préstamo de equipo",
-            "Modificar préstamo de equipo",
-            "Devolución de equipo",
-            "Buscar equipo",
-            "Volver al menú principal"
-        };
-        int opcion;
-        do {
-            opcion = JOptionPane.showOptionDialog(
-                null,
-                "Menú Ingeniería",
-                "Gestión Ingeniería", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, opciones, opciones[0]
-            );
-            switch (opcion) {
-                case 0: 
-                registrarPrestamo(); 
-                break;
-                case 1: 
-                modificarPrestamo(); 
-                break;
-                case 2: 
-                devolucionEquipo();
-                 break;
-                case 3: 
-                buscarEquipo();
-                break;
-                default: // salir
-            }
-        } while (opcion != 4 && opcion != JOptionPane.CLOSED_OPTION);
+        String[] opciones = {"Registrar préstamo", "Modificar préstamo", "Devolver equipo", "Buscar equipo", "Volver"};
+        int op = JOptionPane.showOptionDialog(null, "Menú Ingeniería", "Menú", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, opciones, opciones[0]);
+        switch(op) {
+            case 0: registrarPrestamo(); break;
+            case 1: modificarPrestamo(); break;
+            case 2: devolverPrestamo(); break;
+            case 3: buscarEquipo(); break;
+            default: break;
+        }
     }
-
     public static void registrarPrestamo() {
         String cedula = Utilidades.pedirCedulaObligatoria("Ingrese cédula:");
         if (Utilidades.buscarEstudianteIngenieria(cedula) != null) {
